@@ -1,4 +1,5 @@
 import os
+import json
 import requests
 from dotenv import load_dotenv
   
@@ -30,17 +31,27 @@ def extraer_texto(datos):
      except (KeyError, IndexError):
      	raise RuntimeError("La respuesta no trae el texto generado en el lugar esperado.")
 
+def extraer_metadata(datos):
+    metadata = datos.get("usageMetadata", {})
+    return metadata
+
 def obtener_dato_de_prueba(pregunta):
      url, body = armar_peticion(pregunta)
-     datos = enviar_peticion(url, body)
-     return extraer_texto(datos)
+     datos = enviar_peticion(url,body)
+     metadata = extraer_metadata(datos)   
+     return extraer_texto(datos), metadata
 
-pregunta = "Confirma en una frase corta que esta conexión funciona"
+pregunta = "Confirma en una frase corta que esta conexión funciona y un emoji"
 
 print(" -- Verificando manejo de errores except -- ")
 
 try:
-     resultado = obtener_dato_de_prueba(pregunta)
+     resultado, metadata = obtener_dato_de_prueba(pregunta)
      print(resultado)
+     #print(json.dumps(metadata, indent=2, ensure_ascii=False))
+     print(f"Tokens de entrada: {metadata.get('promptTokenCount', 'No informado')}")
+     print(f"Tokens de salida: {metadata.get('candidatesTokenCount', 'No informado')}")
+     print(f"Tokens de pensamiento: {metadata.get('thoughtsTokenCount', 'No informado')}")
+     print(f"Total: {metadata.get('totalTokenCount', 'No informado')}")
 except (ValueError, RuntimeError) as error:
      print("No se pudo completar la operación:", error)
