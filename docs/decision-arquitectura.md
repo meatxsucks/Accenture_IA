@@ -35,7 +35,7 @@ Captura de la prueba:
 
 ![Comparación de modelos](<Comparación Modelos.jpg>)
 
-Es una sola ejecución con una sola pregunta, así que sirve como referencia y no como promedio.
+Se realizó una pregunta a cada modelo, midiendo la cantidad de tokens usados, el costo y latencia de cada uno.
 
 ## Justificación
 
@@ -48,5 +48,5 @@ La elección es **Deepseek 4.1 Flash**, y el motivo es el costo. A pesar de tene
 
 ## Alternativa descartada y por qué
 
-- **Gemini 3.6 Flash:** es el más rápido (7.21 s), pero cuesta unas 15 veces más por llamada que Deepseek. Se descarta por costo. Es el que acepta más tipos de entrada (texto, imagen, audio, video y archivos), pero este caso solo usa texto, así que esa ventaja no compensa el costo. Pasaría a ser la mejor opción si el proyecto necesita respuestas rápidas o procesar audio, video o archivos.
-- **Minimax 3.1 Flash:** cuesta unas 1.5 veces más que Deepseek por llamada y responde más rápido (12.26 s contra 18.26 s). No se considera gratis para este caso. Es la alternativa a reconsiderar si la latencia de Deepseek resulta demasiado alta.
+- **Gemini 3.6 Flash:** es el más rápido (7.21 s), pero cuesta unas 15 veces más por llamada que Deepseek. Se descarta por costo. Es el que acepta más tipos de entrada (texto, imagen, audio, video y archivos), pero este caso solo usa texto, así que esa ventaja no compensa el costo. 
+- **Minimax 3.1 Flash:** cuesta unas 1.5 veces más que Deepseek por llamada y responde más rápido (12.26 s contra 18.26 s). Aunque su precio es más alto que Deepseek
