@@ -1,5 +1,5 @@
 import os
-
+import time
 import requests
 from dotenv import load_dotenv
 
@@ -7,8 +7,8 @@ load_dotenv()
 
 MODELO = "gemini-3.6-flash"
 URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODELO}:generateContent"
-PRECIO_ENTRADA = 0.001  # USD por millón de tokens: copia el valor de la tabla oficial
-PRECIO_SALIDA = 0.001   # USD por millón de tokens: copia el valor de la tabla oficial
+PRECIO_ENTRADA = 0.75 # USD por millón de tokens: copia el valor de la tabla oficial
+PRECIO_SALIDA = 3.75      # USD por millón de tokens: copia el valor de la tabla oficial
 
 
 def armar_peticion(pregunta):
@@ -54,6 +54,8 @@ def calcular_costo(metadata, precio_entrada, precio_salida):
     tokens_salida = metadata.get("candidatesTokenCount", 0) + metadata.get("thoughtsTokenCount", 0)
     return (tokens_entrada * precio_entrada + tokens_salida * precio_salida) / 1_000_000
 
+    
+
 
 def obtener_dato_de_prueba(pregunta):
     headers, body = armar_peticion(pregunta)
@@ -61,12 +63,15 @@ def obtener_dato_de_prueba(pregunta):
     return extraer_texto(datos), extraer_metadata(datos)
 
 
-if __name__ == "__main__":
-    pregunta = "Confirma en una frase corta que esta conexión funciona y un emoji"
 
-    print(" -- Verificando manejo de errores except -- ")
-    try:
+pregunta = "Como se llega de santiago a mendoza. Explicalo en un breve resumen."
+
+print(" -- Verificando manejo de errores except -- ")
+inicio = time.perf_counter()
+try:
+        
         resultado, metadata = obtener_dato_de_prueba(pregunta)
+        
         costo = calcular_costo(metadata, PRECIO_ENTRADA, PRECIO_SALIDA)
         print(resultado)
         print(f"Tokens de entrada: {metadata.get('promptTokenCount', 'No informado')}")
@@ -74,5 +79,8 @@ if __name__ == "__main__":
         print(f"Tokens de pensamiento: {metadata.get('thoughtsTokenCount', 'No informado')}")
         print(f"Total: {metadata.get('totalTokenCount', 'No informado')}")
         print(f"Costo estimado: ${costo:.6f}")
-    except (ValueError, RuntimeError) as error:
+except (ValueError, RuntimeError) as error:
         print("No se pudo completar la operación:", error)
+latencia = time.perf_counter() - inicio
+print(f"Latencia: {latencia:.2f} segundos")
+

@@ -1,14 +1,14 @@
 import os
-
+import time
 import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 
-MODELO = "mistralai/mistral-nemo"
+MODELO = "deepseek/deepseek-v4.1-flash"
 URL = f"https://openrouter.ai/api/v1/chat/completions"
-PRECIO_ENTRADA = 0.01656 # USD por millón de tokens: copia el valor de la tabla oficial
-PRECIO_SALIDA = 0.0216  # USD por millón de tokens: copia el valor de la tabla oficial
+PRECIO_ENTRADA = 0.0342 # USD por millón de tokens
+PRECIO_SALIDA = 0.1368  # USD por millón de tokens
 
 
 def armar_peticion(pregunta):
@@ -64,18 +64,23 @@ def obtener_dato_de_prueba(pregunta):
     return extraer_texto(datos), metadata
 
 
-if __name__ == "__main__":
-    pregunta = "Confirma en una frase corta que esta conexión funciona y un emoji"
 
-    print(" -- Verificando manejo de errores except -- ")
-    try:
-        resultado, metadata = obtener_dato_de_prueba(pregunta)
-        costo = calcular_costo(metadata, PRECIO_ENTRADA, PRECIO_SALIDA)
-        print(resultado)
-        print(f"Tokens de entrada: {metadata.get('prompt_tokens', 'No informado')}")
-        print(f"Tokens de salida: {metadata.get('completion_tokens', 'No informado')}")
-        print(f"Tokens de pensamiento: {metadata.get('thoughts_tokens', 'No informado')}")
-        print(f"Total: {metadata.get('total_tokens', 'No informado')}")
-        print(f"Costo estimado: ${costo:.6f}")
-    except (ValueError, RuntimeError) as error:
+#pregunta = "Confirma en una frase corta que esta conexión funciona y un emoji"
+pregunta = "Como se llega de santiago a mendoza. Explicalo en un breve resumen."
+
+print(" -- Verificando manejo de errores except -- ")
+inicio = time.perf_counter()
+try:
+    resultado, metadata = obtener_dato_de_prueba(pregunta)
+    costo = calcular_costo(metadata, PRECIO_ENTRADA, PRECIO_SALIDA)
+    print(resultado)
+    print(f"Tokens de entrada: {metadata.get('prompt_tokens', 'No informado')}")
+    print(f"Tokens de salida: {metadata.get('completion_tokens', 'No informado')}")
+    print(f"Tokens de pensamiento: {metadata.get('thoughts_tokens', 'No informado')}")
+    print(f"Total: {metadata.get('total_tokens', 'No informado')}")
+    print(f"Costo estimado: ${costo:.6f}")
+    
+except (ValueError, RuntimeError) as error:
         print("No se pudo completar la operación:", error)
+latencia = time.perf_counter() - inicio
+print(f"Latencia: {latencia:.2f} segundos")
