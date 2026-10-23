@@ -1,6 +1,8 @@
 import os
 import time
 import requests
+import json
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,9 +11,14 @@ MODELO = "minimax/minimax-m3.1-flash"
 URL = f"https://openrouter.ai/api/v1/chat/completions"
 PRECIO_ENTRADA = 0.15 # USD por millón de tokens
 PRECIO_SALIDA = 0.60  # USD por millón de tokens
+response_schema = {
+    "type": "object",
+    "properties": {"response": {"type": "string"}},
+    "required": ["response"],
+    "additionalProperties": False,
+}
 
-
-def armar_peticion(instruccion, pregunta):
+def armar_peticion(instruccion, pregunta, response_schema=None):
     if not pregunta or not pregunta.strip():
         raise ValueError("La pregunta no puede estar vacía")
     api_key = os.getenv("OPENROUTER_API_KEY")
@@ -22,15 +29,23 @@ def armar_peticion(instruccion, pregunta):
     "Content-Type": "application/json",
     }
     body = {"model": MODELO, "messages": [{"role": "system", "content": instruccion},
-                                              {"role": "user", "content": pregunta}]}
+                                                  {"role": "user", "content": pregunta}],
+                "response_format": {"type": "json_object"},
+            }
+    if response_schema is not None:
+        body["response_format"] = {
+            "type": "json_schema",
+            "json_schema": {"name": "respuesta", "strict": True, "schema": response_schema},
+            
+        }   
     return headers, body
 
 
 def enviar_peticion(headers, body):
     try:
         respuesta = requests.post(URL, headers=headers, json=body, timeout=30)
-    except requests.exceptions.RequestException:
-        raise RuntimeError("No se pudo conectar con el servicio. Intenta de nuevo en unos segundos.")
+    except requests.exceptions.RequestException as error:
+        raise RuntimeError(f"No se pudo conectar con el servicio: {error}")
     try:
         datos = respuesta.json()
     except ValueError:
@@ -58,24 +73,38 @@ def calcular_costo(metadata, precio_entrada, precio_salida):
     return (tokens_entrada * precio_entrada + tokens_salida * precio_salida) / 1_000_000
 
 
-def obtener_dato_de_prueba(instruccion, pregunta):
-    headers, body = armar_peticion(instruccion, pregunta)
+def obtener_dato_de_prueba(instruccion, pregunta,response_schema=None):
+    headers, body = armar_peticion(instruccion, pregunta,response_schema)
     datos = enviar_peticion(headers, body)
     metadata = datos.get("usage", {})
     return extraer_texto(datos), metadata
 
+def parsear_respuesta_json(texto):
+    texto_limpio = texto.strip()
+    texto_limpio = re.sub(r"^```(?:json)?\s*", "", texto_limpio)
+    texto_limpio = re.sub(r"\s*```$", "", texto_limpio)
+    try:
+        datos = json.loads(texto_limpio)
+    except json.JSONDecodeError:
+        raise ValueError("La respuesta del modelo no es JSON válido.")
+    if not isinstance(datos, dict) or not datos:
+        raise ValueError("La respuesta no tiene la estructura esperada.")
+    return datos
+
+
 
 
 #pregunta = "Confirma en una frase corta que esta conexión funciona y un emoji"
-instruccion = "Eres un guía de viajes. Responde siempre en español, en máximo 3 líneas."
+instruccion = "Eres un guía de viajes. Responde siempre en español, en máximo 3 líneas"
 pregunta = "Como se llega de santiago a mendoza. Explicalo en un breve resumen."
 
 print(" -- Verificando manejo de errores except -- ")
 inicio = time.perf_counter()
 try:
-    resultado, metadata = obtener_dato_de_prueba(instruccion, pregunta)
+    resultado, metadata = obtener_dato_de_prueba(instruccion, pregunta, response_schema)
     costo = calcular_costo(metadata, PRECIO_ENTRADA, PRECIO_SALIDA)
-    print(resultado)
+    datos_json = parsear_respuesta_json(resultado)
+    print(datos_json)
     print(f"Tokens de entrada: {metadata.get('prompt_tokens', 'No informado')}")
     print(f"Tokens de salida: {metadata.get('completion_tokens', 'No informado')}")
     print(f"Tokens de pensamiento: {metadata.get('thoughts_tokens', 'No informado')}")

@@ -1,6 +1,8 @@
 import os
 import time
 import requests
+import json
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,9 +11,13 @@ MODELO = "gemini-3.6-flash"
 URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODELO}:generateContent"
 PRECIO_ENTRADA = 0.75 # USD por millón de tokens: copia el valor de la tabla oficial
 PRECIO_SALIDA = 3.75      # USD por millón de tokens: copia el valor de la tabla oficial
+response_schema = {
+    "type": "OBJECT",
+    "properties": {"response": {"type": "STRING"}},
+    "required": ["response"]
+}
 
-
-def armar_peticion(instruccion,pregunta):
+def armar_peticion(instruccion,pregunta,response_schema=None):
     if not pregunta or not pregunta.strip():
         raise ValueError("La pregunta no puede estar vacía")
     api_key = os.getenv("GEMINI_API_KEY")
@@ -21,15 +27,22 @@ def armar_peticion(instruccion,pregunta):
     body = {
     "system_instruction": {"parts": [{"text": instruccion}]},
     "contents": [{"parts": [{"text": pregunta}]}],
+    "generationConfig": {"responseMimeType": "application/json"},
     }
+    
+    if response_schema is not None:
+                body["generationConfig"] = {
+                    "responseMimeType": "application/json",
+                    "responseSchema": response_schema
+                }
     return headers, body
 
 
 def enviar_peticion(headers, body):
     try:
         respuesta = requests.post(URL, headers=headers, json=body, timeout=30)
-    except requests.exceptions.RequestException:
-        raise RuntimeError("No se pudo conectar con el servicio. Intenta de nuevo en unos segundos.")
+    except requests.exceptions.RequestException as error:
+        raise RuntimeError(f"No se pudo conectar con el servicio: {error}")
     try:
         datos = respuesta.json()
     except ValueError:
@@ -60,24 +73,40 @@ def calcular_costo(metadata, precio_entrada, precio_salida):
     
 
 
-def obtener_dato_de_prueba(instruccion, pregunta):
-    headers, body = armar_peticion(instruccion, pregunta)
+def obtener_dato_de_prueba(instruccion, pregunta,response_schema=None):
+    headers, body = armar_peticion(instruccion, pregunta, response_schema)
     datos = enviar_peticion(headers, body)
     return extraer_texto(datos), extraer_metadata(datos)
 
 
+def parsear_respuesta_json(texto):
+    texto_limpio = texto.strip()
+    texto_limpio = re.sub(r"^```(?:json)?\s*", "", texto_limpio)
+    texto_limpio = re.sub(r"\s*```$", "", texto_limpio)
+    try:
+        datos = json.loads(texto_limpio)
+    except json.JSONDecodeError:
+        raise ValueError("La respuesta del modelo no es JSON válido.")
+    if not isinstance(datos, dict) or not datos:
+        raise ValueError("La respuesta no tiene la estructura esperada.")
+    return datos
 
-instruccion = "Eres un guía de viajes. Responde siempre en español, en máximo 3 líneas."
+
+
+
+
+instruccion = "Eres un guía de viajes. Responde siempre en español, en máximo 3 líneas"
 pregunta = "Como se llega de santiago a mendoza. Explicalo en un breve resumen."
 
 print(" -- Verificando manejo de errores except -- ")
 inicio = time.perf_counter()
 try:
         
-        resultado, metadata = obtener_dato_de_prueba(instruccion, pregunta)
+        resultado, metadata = obtener_dato_de_prueba(instruccion, pregunta, response_schema)
         
         costo = calcular_costo(metadata, PRECIO_ENTRADA, PRECIO_SALIDA)
-        print(resultado)
+        datos_json = parsear_respuesta_json(resultado)
+        print(datos_json)
         print(f"Tokens de entrada: {metadata.get('promptTokenCount', 'No informado')}")
         print(f"Tokens de salida: {metadata.get('candidatesTokenCount', 'No informado')}")
         print(f"Tokens de pensamiento: {metadata.get('thoughtsTokenCount', 'No informado')}")
