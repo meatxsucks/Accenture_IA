@@ -11,7 +11,7 @@ PRECIO_ENTRADA = 0.15 # USD por millón de tokens
 PRECIO_SALIDA = 0.60  # USD por millón de tokens
 
 
-def armar_peticion(pregunta):
+def armar_peticion(instruccion, pregunta):
     if not pregunta or not pregunta.strip():
         raise ValueError("La pregunta no puede estar vacía")
     api_key = os.getenv("OPENROUTER_API_KEY")
@@ -21,7 +21,8 @@ def armar_peticion(pregunta):
     "Authorization": f"Bearer {api_key}",
     "Content-Type": "application/json",
     }
-    body = {"model": MODELO, "messages": [{"role": "user", "content": pregunta}]}
+    body = {"model": MODELO, "messages": [{"role": "system", "content": instruccion},
+                                              {"role": "user", "content": pregunta}]}
     return headers, body
 
 
@@ -57,8 +58,8 @@ def calcular_costo(metadata, precio_entrada, precio_salida):
     return (tokens_entrada * precio_entrada + tokens_salida * precio_salida) / 1_000_000
 
 
-def obtener_dato_de_prueba(pregunta):
-    headers, body = armar_peticion(pregunta)
+def obtener_dato_de_prueba(instruccion, pregunta):
+    headers, body = armar_peticion(instruccion, pregunta)
     datos = enviar_peticion(headers, body)
     metadata = datos.get("usage", {})
     return extraer_texto(datos), metadata
@@ -66,12 +67,13 @@ def obtener_dato_de_prueba(pregunta):
 
 
 #pregunta = "Confirma en una frase corta que esta conexión funciona y un emoji"
+instruccion = "Eres un guía de viajes. Responde siempre en español, en máximo 3 líneas."
 pregunta = "Como se llega de santiago a mendoza. Explicalo en un breve resumen."
 
 print(" -- Verificando manejo de errores except -- ")
 inicio = time.perf_counter()
 try:
-    resultado, metadata = obtener_dato_de_prueba(pregunta)
+    resultado, metadata = obtener_dato_de_prueba(instruccion, pregunta)
     costo = calcular_costo(metadata, PRECIO_ENTRADA, PRECIO_SALIDA)
     print(resultado)
     print(f"Tokens de entrada: {metadata.get('prompt_tokens', 'No informado')}")
