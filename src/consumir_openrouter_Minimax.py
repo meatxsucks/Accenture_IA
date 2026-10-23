@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MODELO = "minimax/minimax-m3.1-flash:free"
+MODELO = "minimax/minimax-m3.1-flash"
 URL = f"https://openrouter.ai/api/v1/chat/completions"
 PRECIO_ENTRADA = 0.15 # USD por millón de tokens
 PRECIO_SALIDA = 0.60  # USD por millón de tokens
