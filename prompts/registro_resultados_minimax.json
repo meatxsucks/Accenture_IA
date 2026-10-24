@@ -1,0 +1,14 @@
+{
+  "resumen_ruta": {
+    "exitos": 2,
+    "intentos": 3
+  },
+  "opciones_transporte": {
+    "exitos": 3,
+    "intentos": 3
+  },
+  "clasificar_consulta": {
+    "exitos": 3,
+    "intentos": 3
+  }
+}

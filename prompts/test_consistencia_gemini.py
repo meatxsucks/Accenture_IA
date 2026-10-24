@@ -30,6 +30,6 @@ for prompt in BANCO_DE_PROMPTS:
     print(f"{prompt['nombre']}: {exitos}/{intentos} respuestas válidas")
     registro[prompt["nombre"]] = {"exitos": exitos, "intentos": intentos}
 
-ruta_registro = os.path.join(os.path.dirname(__file__), "registro_resultados.json")
+ruta_registro = os.path.join(os.path.dirname(__file__), "registro_resultados_gemini.json")
 with open(ruta_registro, "w", encoding="utf-8") as archivo:
     json.dump(registro, archivo, indent=2, ensure_ascii=False)
