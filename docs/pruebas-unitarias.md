@@ -8,11 +8,11 @@ python -m pytest -v
 
 `pytest.ini` apunta a `src/` para encontrar el módulo, así que se corre desde la raíz del repositorio. Resultado actual: **20 pruebas en verde en 0,09 s**.
 
-La última corrida, con cada prueba ejecutada por separado (su comando y su resultado), está en [`resultado-pruebas.txt`](resultado-pruebas.txt). Para regenerarla, desde la raíz y con el venv activo:
+La última corrida, con cada prueba ejecutada por separado (su comando y su resultado), está en [`resultado-pruebas.txt`](resultado-pruebas.txt). Para regenerarla, con el venv activo:
 
 ```
 {
-  echo "Resultado de la suite de pruebas, una por una - $(date '+%Y-%m-%d %H:%M')"; echo
+  echo "Resultado de la suite de pruebas - $(date '+%Y-%m-%d %H:%M')"; echo
   python -m pytest --collect-only -q --color=no | grep '::' | while read -r prueba; do
     echo "\$ python -m pytest \"$prueba\" -v"
     python -m pytest "$prueba" -v --color=no 2>&1 | grep -E "PASSED|FAILED|ERROR| passed| failed"
