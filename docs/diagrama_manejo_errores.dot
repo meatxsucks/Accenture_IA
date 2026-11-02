@@ -1,0 +1,80 @@
+digraph G {
+  graph [rankdir=TB, splines=ortho, labelloc=t, label="Diagrama de manejo de errores (Módulo 2)", fontname="Helvetica", fontsize=16, nodesep=0.5, ranksep=0.55, pad=0.3];
+  node  [shape=plain, fontname="Helvetica", fontsize=10];
+  edge  [fontname="Helvetica", fontsize=9, color="#5b6b82", penwidth=1.2];
+
+  usuario [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#e8f0fe"><B>Usuario</B></TD></TR>
+    <TR><TD BGCOLOR="white">Llama a consultar_modelo(pregunta)</TD></TR></TABLE>>];
+
+  consultar [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#f1f3f4"><B>consultar_modelo</B></TD></TR>
+    <TR><TD BGCOLOR="white">Único punto de entrada: orquesta los pasos<BR/>y traduce el error final</TD></TR></TABLE>>];
+
+  armar [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#ddeeff"><B>armar_peticion</B></TD></TR>
+    <TR><TD BGCOLOR="white">Valida la pregunta y arma headers + body</TD></TR></TABLE>>];
+
+  reintento [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#ddeeff"><B>con_reintento</B></TD></TR>
+    <TR><TD BGCOLOR="white">Reintenta solo ante TimeoutError (máx. 3 intentos)<BR/>Espera: 2 s · 2^(n-1), tope 30 s, + jitter hasta 10 %</TD></TR></TABLE>>];
+
+  enviar [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#ddeeff"><B>enviar_peticion</B></TD></TR>
+    <TR><TD BGCOLOR="white">POST al proveedor (timeout 30 s)<BR/>Clasifica la respuesta según el código de estado</TD></TR></TABLE>>];
+
+  proveedor [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#fff3cd"><B>Proveedor</B></TD></TR>
+    <TR><TD BGCOLOR="white">Gemini · Deepseek · Minimax</TD></TR></TABLE>>];
+
+  ok [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#dff0d8"><B>200 OK</B></TD></TR>
+    <TR><TD BGCOLOR="white">extraer_texto y registrar_costo<BR/>(el costo se suma solo si la petición tuvo éxito)</TD></TR></TABLE>>];
+
+  salida_ok [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#dff0d8"><B>Respuesta</B></TD></TR>
+    <TR><TD BGCOLOR="white">Texto generado + costo acumulado</TD></TR></TABLE>>];
+
+  auth [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#fde4e4"><B>ValueError · 401 / 403</B></TD></TR>
+    <TR><TD BGCOLOR="white">Credencial inválida o sin permiso<BR/><B>No se reintenta</B></TD></TR></TABLE>>];
+
+  limite [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#ffe8cc"><B>TimeoutError</B></TD></TR>
+    <TR><TD BGCOLOR="white">429 límite de uso (lee Retry-After si viene)<BR/>5xx el proveedor no pudo procesar<BR/>Sin conexión o tiempo de espera agotado<BR/><B>Sí se reintenta</B></TD></TR></TABLE>>];
+
+  http [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#fde4e4"><B>HTTPError · otro 4xx</B></TD></TR>
+    <TR><TD BGCOLOR="white">raise_for_status<BR/><B>No se reintenta</B></TD></TR></TABLE>>];
+
+  valor [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#fde4e4"><B>ValueError · pregunta inválida</B></TD></TR>
+    <TR><TD BGCOLOR="white">La pregunta no es un texto válido<BR/><B>No se reintenta</B></TD></TR></TABLE>>];
+
+  agotado [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#fde4e4"><B>RuntimeError</B></TD></TR>
+    <TR><TD BGCOLOR="white">"El servicio no respondió tras varios intentos"<BR/>consultar_modelo convierte el TimeoutError final</TD></TR></TABLE>>];
+
+  quien [label=<<TABLE BORDER="1" COLOR="#5b6b82" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD BGCOLOR="#fde4e4"><B>Quien llama: try / except</B></TD></TR>
+    <TR><TD BGCOLOR="white">ValueError: error de configuración o de entrada<BR/>RuntimeError: el servicio no respondió, intentar más tarde</TD></TR></TABLE>>];
+
+  usuario -> consultar;
+  consultar -> armar [xlabel="pregunta"];
+  armar -> reintento [xlabel="headers + body"];
+  reintento -> enviar [xlabel="llama"];
+  enviar -> proveedor [xlabel="petición"];
+  proveedor -> ok [xlabel="200"];
+  proveedor -> auth [xlabel="401 / 403", style=dashed];
+  proveedor -> limite [xlabel="429 / 5xx / red", style=dashed];
+  proveedor -> http [xlabel="otro 4xx", style=dashed];
+  ok -> salida_ok;
+  limite -> reintento [xlabel="intento < 3:\nespera backoff y repite", style=dashed, constraint=false];
+  limite -> agotado [xlabel="3 intentos\nagotados", style=dashed];
+  armar -> valor [style=dashed, constraint=false];
+  valor -> quien [style=dashed];
+  auth -> quien [xlabel="llega tal cual", style=dashed];
+  http -> quien [style=dashed];
+  agotado -> quien [style=dashed];
+  { rank=same; auth; limite; http; ok }
+}
