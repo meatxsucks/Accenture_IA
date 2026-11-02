@@ -1,4 +1,4 @@
-from consumir_gemini import obtener_dato_de_prueba, parsear_respuesta_json, response_schema
+from consumir_openrouter_Minimax import obtener_dato_de_prueba, parsear_respuesta_json, response_schema
 
 for pregunta in ["¿Cuál es la capital de Inglaterra?", "   "]:
     try:

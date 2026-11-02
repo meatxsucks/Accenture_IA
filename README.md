@@ -34,6 +34,26 @@ python src/consumir_openrouter_Deepseek.py
 python src/consumir_openrouter_Minimax.py
 ```
 
+## Clientes modulares con reintento
+
+Cada modelo tiene un cliente que expone una sola función, `consultar_modelo(pregunta, system_instruction="")`. Por dentro arma la petición, la envía con reintento y devuelve el texto de la respuesta, de modo que quien lo usa no necesita conocer cómo se manejan los errores:
+
+```
+python src/cliente_gemini.py
+python src/cliente_deepseek.py
+python src/cliente_minimax.py
+```
+
+Los errores del proveedor se clasifican en `enviar_peticion` (dentro de cada `consumir_*.py`) y se tratan así:
+
+| Respuesta del proveedor | Excepción | ¿Se reintenta? |
+|---|---|---|
+| 401 o 403 (credencial inválida o sin permiso) | `ValueError` | No, falla de inmediato |
+| 429 (límite de uso) | `TimeoutError`, con los segundos de `Retry-After` si el proveedor los informa | Sí |
+| 5xx (el proveedor no pudo procesar la petición) | `TimeoutError` | Sí |
+
+Cada cliente es autocontenido: trae su propio `enviar_peticion` y su propio `con_reintento`. `con_reintento` reintenta hasta 3 veces con una espera fija de 2 segundos, y solo ante `TimeoutError`. Si se agotan los intentos, `consultar_modelo` lo convierte en un `RuntimeError` con un mensaje claro: "El servicio no respondió tras varios intentos. Intenta más tarde."
+
 ## Banco de prompts y pruebas de consistencia
 
 El banco de prompts (`prompts/banco.py`) tiene tres prompts para la misma tarea de guía de viajes: `resumen_ruta`, `opciones_transporte` y `clasificar_consulta`. Cada script de prueba ejecuta cada prompt 3 veces contra la API real, intenta interpretar la respuesta como JSON con las claves esperadas, y guarda cuántas veces funcionó:
@@ -48,7 +68,7 @@ Los resultados quedan en `prompts/registro_resultados_gemini.json`, `prompts/reg
 
 ## Estructura de carpetas
 
-- `src/` : todo el código fuente del proyecto: `main.py` (punto de entrada) y un módulo de consumo de API por cada modelo.
+- `src/` : todo el código fuente del proyecto: `main.py` (punto de entrada), un módulo de consumo de API por cada modelo (`consumir_*.py`) y un cliente modular por modelo (`cliente_*.py`).
 - `prompts/` : el banco de prompts, los scripts de prueba de consistencia y sus registros de resultados.
 - `docs/` : documentación técnica del proyecto (diagrama de arquitectura, decisión de arquitectura y capturas de evidencia).
 - `tests/` : pruebas de tu código (las vas a usar más adelante en el programa, cuando el proyecto lo requiera).

@@ -44,6 +44,14 @@ def enviar_peticion(headers: dict, body: dict) -> dict:
         respuesta = requests.post(URL, headers=headers, json=body, timeout=30)
     except requests.exceptions.RequestException as error:
         raise RuntimeError(f"No se pudo conectar con el servicio: {error}")
+    if respuesta.status_code in (401, 403):
+        raise ValueError("Credencial inválida o sin permiso. Revisa tu OPENROUTER_API_KEY.")
+    if respuesta.status_code == 429:
+        segundos = respuesta.headers.get("Retry-After")
+        mensaje = f"Límite excedido. Reintentar en {segundos}s." if segundos else "Límite excedido."
+        raise TimeoutError(mensaje)
+    if respuesta.status_code >= 500:
+        raise TimeoutError("El proveedor no pudo procesar la petición. Hay que esperar y reintentar.")
     try:
         datos = respuesta.json()
     except ValueError:
@@ -123,7 +131,7 @@ if __name__ == "__main__":
             print(f"Tokens de pensamiento: {metadata.get('thoughts_tokens', 'No informado')}")
             print(f"Total: {metadata.get('total_tokens', 'No informado')}")
             print(f"Costo estimado: ${costo:.6f}")
-        except (ValueError, RuntimeError) as error:
+        except (ValueError, RuntimeError, TimeoutError) as error:
             print("No se pudo completar la operación:", error)
         latencia = time.perf_counter() - inicio
         print(f"Latencia: {latencia:.2f} segundos")
