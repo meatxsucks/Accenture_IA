@@ -1,0 +1,82 @@
+Resultado de la suite de pruebas, una por una - 2026-11-02 00:49
+
+$ python -m pytest "tests/test_cliente.py::test_enviar_peticion_exito" -v
+tests/test_cliente.py::test_enviar_peticion_exito PASSED                 [100%]
+============================== 1 passed in 0.06s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_enviar_peticion_limite_de_uso_o_error_del_proveedor[429]" -v
+tests/test_cliente.py::test_enviar_peticion_limite_de_uso_o_error_del_proveedor[429] PASSED [100%]
+============================== 1 passed in 0.05s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_enviar_peticion_limite_de_uso_o_error_del_proveedor[500]" -v
+tests/test_cliente.py::test_enviar_peticion_limite_de_uso_o_error_del_proveedor[500] PASSED [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_enviar_peticion_limite_de_uso_o_error_del_proveedor[503]" -v
+tests/test_cliente.py::test_enviar_peticion_limite_de_uso_o_error_del_proveedor[503] PASSED [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_enviar_peticion_sin_conexion_es_reintentable" -v
+tests/test_cliente.py::test_enviar_peticion_sin_conexion_es_reintentable PASSED [100%]
+============================== 1 passed in 0.05s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_enviar_peticion_credencial_invalida[401]" -v
+tests/test_cliente.py::test_enviar_peticion_credencial_invalida[401] PASSED [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_enviar_peticion_credencial_invalida[403]" -v
+tests/test_cliente.py::test_enviar_peticion_credencial_invalida[403] PASSED [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_enviar_peticion_error_400_no_se_reintenta" -v
+tests/test_cliente.py::test_enviar_peticion_error_400_no_se_reintenta PASSED [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_con_reintento_reintenta_si_hay_timeout" -v
+tests/test_cliente.py::test_con_reintento_reintenta_si_hay_timeout PASSED [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_con_reintento_respeta_backoff_y_jitter" -v
+tests/test_cliente.py::test_con_reintento_respeta_backoff_y_jitter PASSED [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_con_reintento_respeta_el_tope_de_espera" -v
+tests/test_cliente.py::test_con_reintento_respeta_el_tope_de_espera PASSED [100%]
+============================== 1 passed in 0.07s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_con_reintento_no_reintenta_value_error" -v
+tests/test_cliente.py::test_con_reintento_no_reintenta_value_error PASSED [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_con_reintento_agota_intentos" -v
+tests/test_cliente.py::test_con_reintento_agota_intentos PASSED          [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_registrar_costo_acumula" -v
+tests/test_cliente.py::test_registrar_costo_acumula PASSED               [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_registrar_costo_maneja_multiples_llamadas" -v
+tests/test_cliente.py::test_registrar_costo_maneja_multiples_llamadas PASSED [100%]
+============================== 1 passed in 0.05s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_registrar_costo_sin_usage_metadata_no_suma" -v
+tests/test_cliente.py::test_registrar_costo_sin_usage_metadata_no_suma PASSED [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_consultar_modelo_flujo_exitoso" -v
+tests/test_cliente.py::test_consultar_modelo_flujo_exitoso PASSED        [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_consultar_modelo_integra_reintento_y_costo" -v
+tests/test_cliente.py::test_consultar_modelo_integra_reintento_y_costo PASSED [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_consultar_modelo_convierte_timeout_agotado_en_runtime_error" -v
+tests/test_cliente.py::test_consultar_modelo_convierte_timeout_agotado_en_runtime_error PASSED [100%]
+============================== 1 passed in 0.04s ===============================
+
+$ python -m pytest "tests/test_cliente.py::test_consultar_modelo_propaga_value_error_sin_cambios" -v
+tests/test_cliente.py::test_consultar_modelo_propaga_value_error_sin_cambios PASSED [100%]
+============================== 1 passed in 0.04s ===============================
+
