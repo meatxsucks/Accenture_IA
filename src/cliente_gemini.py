@@ -2,6 +2,8 @@ import os
 
 import time
 
+import random
+
 import requests
 
 from dotenv import load_dotenv
@@ -27,8 +29,8 @@ headers = {"Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY}
 def enviar_peticion(cuerpo: dict) -> dict:
     try:
         respuesta = requests.post(URL, json=cuerpo, headers=headers, timeout=30)
-    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
-        raise TimeoutError("No se pudo contactar al proveedor. Puede ser momentáneo.")
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as error:
+        raise TimeoutError(f"No se pudo contactar al proveedor ({type(error).__name__}). Puede ser momentáneo.")
     if respuesta.status_code in (401, 403):
         raise ValueError("Credencial inválida o sin permiso. Revisa tu GEMINI_API_KEY.")
     if respuesta.status_code == 429:
@@ -36,7 +38,7 @@ def enviar_peticion(cuerpo: dict) -> dict:
         mensaje = f"Límite excedido. Reintentar en {segundos}s." if segundos else "Límite excedido."
         raise TimeoutError(mensaje)
     if respuesta.status_code >= 500:
-        raise TimeoutError("El proveedor no pudo procesar la petición. Hay que esperar y reintentar.")
+        raise TimeoutError(f"El proveedor no pudo procesar la petición (HTTP {respuesta.status_code}). Hay que esperar y reintentar.")
     respuesta.raise_for_status()
     return respuesta.json()
 
@@ -44,16 +46,19 @@ def enviar_peticion(cuerpo: dict) -> dict:
 def con_reintento(
     funcion: Callable[[], Any],
     intentos: int = 3,
-    espera_segundos: int = 2,
+    espera_base: float = 2,
+    espera_maxima: float = 30,
 ) -> Any:
     for intento in range(1, intentos + 1):
         try:
             return funcion()
-        except TimeoutError:
+        except TimeoutError as error:
             if intento == intentos:
                 raise
-            print(f"Intento {intento} de {intentos} falló por límite de uso. Reintentando...")
-            time.sleep(espera_segundos)
+            espera = min(espera_base * (2 ** (intento - 1)), espera_maxima)
+            espera_con_jitter = espera + random.uniform(0, espera * 0.1)
+            print(f"Intento {intento} de {intentos} falló ({error}). Reintentando en {espera_con_jitter:.1f}s...")
+            time.sleep(espera_con_jitter)
 
 
 COSTO_POR_1000_TOKENS = 0.002  # referencial, ajusta según el modelo que uses
@@ -67,6 +72,7 @@ def registrar_costo(respuesta: dict) -> float:
     total_tokens = uso.get("totalTokenCount", 0)
     costo_estimado = (total_tokens / 1000) * COSTO_POR_1000_TOKENS
     costo_total_sesion += costo_estimado
+    print(f"Operación: {total_tokens} tokens, costo estimado: ${costo_estimado:.5f} (acumulado: ${costo_total_sesion:.5f})")
     return costo_estimado
 
 
@@ -81,6 +87,11 @@ def consultar_modelo(pregunta: str, system_instruction: str = "") -> str:
 
 
 if __name__ == "__main__":
-    respuesta = consultar_modelo("¿Cuál es la capital de Chile?")
-    print(respuesta)
-    print(f"Costo acumulado de la sesión: ${costo_total_sesion:.5f}")
+    for i in range(10):
+        try:
+            respuesta = consultar_modelo(f"Pregunta de prueba número {i}")
+            print(f"Respuesta {i}: {respuesta[:40]}...")
+        except RuntimeError as error:
+            print(f"Respuesta {i} falló definitivamente: {error}")
+
+    print(f"Costo total del ensayo: ${costo_total_sesion:.5f}")
