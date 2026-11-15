@@ -1,5 +1,5 @@
 from cliente import consultar_modelo
-from pipeline_texto import procesar_texto
+from pipeline_texto import procesar_texto, calcular_precision_cobertura_f1
 
 
 CASOS = [
@@ -26,12 +26,19 @@ if __name__ == "__main__":
             print(f"[Caso {i}] No se pudo obtener respuesta: {error}")
             continue
 
+        tokens_ref = procesar_texto(referencia)
+        tokens_resp = procesar_texto(respuesta)
+
         pct_crudo = coincidencia(referencia.split(), respuesta.split())
-        pct_procesado = coincidencia(procesar_texto(referencia), procesar_texto(respuesta))
+        pct_procesado = coincidencia(tokens_ref, tokens_resp)
+        metricas = calcular_precision_cobertura_f1(tokens_ref, tokens_resp)
 
         print(f"[Caso {i}] Pregunta: {pregunta}")
         print(f"[Caso {i}] Referencia: {referencia}")
         print(f"[Caso {i}] Respuesta: {respuesta}")
         print(f"[Caso {i}] Coincidencia texto crudo: {pct_crudo:.1%}")
         print(f"[Caso {i}] Coincidencia texto procesado: {pct_procesado:.1%}")
+        print(f"[Caso {i}] Precisión: {metricas['precision']:.1%}")
+        print(f"[Caso {i}] Cobertura: {metricas['cobertura']:.1%}")
+        print(f"[Caso {i}] F1: {metricas['f1']:.1%}")
         print()

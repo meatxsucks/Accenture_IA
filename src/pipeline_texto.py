@@ -4,7 +4,6 @@ from collections import Counter
 
 
 def limpiar_texto(texto: str) -> str:
-    """Normaliza el texto: minúsculas y sin puntuación."""
     if not isinstance(texto, str):
         tipo = type(texto).__name__
         raise TypeError(f"limpiar_texto espera str, no {tipo}")
@@ -16,23 +15,19 @@ def limpiar_texto(texto: str) -> str:
 
 
 def tokenizar(texto_limpio: str) -> list[str]:
-    """Convierte texto limpio en una lista de tokens."""
     return texto_limpio.split()
 
 
 def vectorizar(tokens: list[str]) -> Counter:
-    """Cuenta cuántas veces aparece cada token."""
     return Counter(tokens)
 
 
 def procesar_texto(texto: str) -> list[str]:
-    """Limpia y tokeniza: es el pipeline completo para comparar textos."""
     texto_limpio = limpiar_texto(texto)
     return tokenizar(texto_limpio)
 
 
 def coincidencia_tokens(referencia: str, respuesta: str) -> float:
-    """Proporción de tokens de la referencia que también aparecen en la respuesta."""
     tokens_referencia = procesar_texto(referencia)
     tokens_respuesta = procesar_texto(respuesta)
     comunes = set(tokens_referencia) & set(tokens_respuesta)
@@ -40,6 +35,34 @@ def coincidencia_tokens(referencia: str, respuesta: str) -> float:
     if tokens_referencia:
         return len(comunes) / len(set(tokens_referencia))
     return 0.0
+
+def contar_coincidencias(
+    tokens_referencia: list[str],
+    tokens_respuesta: list[str],
+) -> int:
+    conteo_referencia = Counter(tokens_referencia)
+    conteo_respuesta = Counter(tokens_respuesta)
+    interseccion = conteo_referencia & conteo_respuesta
+    return sum(interseccion.values())
+
+def calcular_precision_cobertura_f1(
+    tokens_referencia: list[str],
+    tokens_respuesta: list[str],
+) -> dict[str, float]:
+    if not tokens_referencia or not tokens_respuesta:
+        return {"precision": 0.0, "cobertura": 0.0, "f1": 0.0}
+
+    coincidencias = contar_coincidencias(tokens_referencia, tokens_respuesta)
+
+    precision = coincidencias / len(tokens_respuesta)
+    cobertura = coincidencias / len(tokens_referencia)
+
+    if precision + cobertura == 0:
+        f1 = 0.0
+    else:
+        f1 = 2 * precision * cobertura / (precision + cobertura)
+
+    return {"precision": precision, "cobertura": cobertura, "f1": f1}
 
 
 if __name__ == "__main__":
