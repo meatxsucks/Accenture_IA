@@ -6,7 +6,7 @@ import time
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from banco import BANCO_DE_PROMPTS
-from consumir_openrouter_Minimax import armar_peticion, enviar_peticion, extraer_texto, parsear_respuesta_json
+from proveedores_ia.consumir_openrouter_Minimax import armar_peticion, enviar_peticion, extraer_texto, parsear_respuesta_json
 
 registro = {}
 

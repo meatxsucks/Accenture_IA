@@ -8,7 +8,7 @@ from cprint import cprint
 
 from typing import Callable, Any
 
-from consumir_openrouter_Deepseek import URL, armar_peticion, extraer_texto
+from proveedores_ia.consumir_openrouter_Deepseek import URL, armar_peticion, extraer_texto
 
 
 def enviar_peticion(headers: dict, cuerpo: dict) -> dict:

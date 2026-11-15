@@ -28,10 +28,13 @@ No se pudo completar la operación: La pregunta debe ser un texto no vacío
 
 Cada modelo tiene además su propio script, que corre cuatro casos (instrucción de una sola palabra, sin instrucción, JSON pedido en la instrucción y JSON forzado con un esquema) y muestra los tokens usados, el costo estimado y la latencia:
 
+Los módulos de cada modelo viven en `src/proveedores_ia/`, que es un paquete: se ejecutan con `-m` desde la carpeta `src`.
+
 ```
-python src/consumir_gemini.py
-python src/consumir_openrouter_Deepseek.py
-python src/consumir_openrouter_Minimax.py
+cd src
+python -m proveedores_ia.consumir_gemini
+python -m proveedores_ia.consumir_openrouter_Deepseek
+python -m proveedores_ia.consumir_openrouter_Minimax
 ```
 
 ## Clientes modulares con reintento
@@ -39,9 +42,10 @@ python src/consumir_openrouter_Minimax.py
 Cada modelo tiene un cliente que expone una sola función, `consultar_modelo(pregunta, system_instruction="")`. Por dentro arma la petición, la envía con reintento y devuelve el texto de la respuesta, de modo que quien lo usa no necesita conocer cómo se manejan los errores:
 
 ```
-python src/cliente_gemini.py
-python src/cliente_deepseek.py
-python src/cliente_minimax.py
+cd src
+python -m proveedores_ia.cliente_gemini
+python -m proveedores_ia.cliente_deepseek
+python -m proveedores_ia.cliente_minimax
 ```
 
 Los errores del proveedor se clasifican en `enviar_peticion` (dentro de cada `consumir_*.py`) y se tratan así:
@@ -68,7 +72,7 @@ Los resultados quedan en `prompts/registro_resultados_gemini.json`, `prompts/reg
 
 ## Estructura de carpetas
 
-- `src/` : todo el código fuente del proyecto: `main.py` (punto de entrada), un módulo de consumo de API por cada modelo (`consumir_*.py`) y un cliente modular por modelo (`cliente_*.py`).
+- `src/` : todo el código fuente del proyecto: `main.py` (punto de entrada), `cliente.py` y `cliente_api.py` (el cliente modular base) y `proveedores_ia/`, con el módulo de consumo (`consumir_*.py`) y el cliente modular (`cliente_*.py`) de cada modelo.
 - `prompts/` : el banco de prompts, los scripts de prueba de consistencia y sus registros de resultados.
 - `docs/` : documentación técnica del proyecto (diagrama de arquitectura, decisión de arquitectura y capturas de evidencia).
 - `tests/` : pruebas de tu código (las vas a usar más adelante en el programa, cuando el proyecto lo requiera).
