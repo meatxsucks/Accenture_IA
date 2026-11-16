@@ -1,0 +1,162 @@
+[
+  {
+    "consulta": "¿Qué es Python?",
+    "referencia": "Python es un lenguaje de programación interpretado.",
+    "respuesta": "Python es un lenguaje de programación de alto nivel, interpretado, de propósito general y con una sintaxis clara y legible que lo hace ideal tanto para principiantes como para expertos en desarrollo web, análisis de datos, inteligencia artificial y automatización.",
+    "precision": 0.175,
+    "cobertura": 1.0,
+    "f1": 0.2978723404255319
+  },
+  {
+    "consulta": "¿Cuál es la capital de Chile?",
+    "referencia": "Santiago es la capital de Chile.",
+    "respuesta": "La capital de Chile es Santiago.",
+    "precision": 1.0,
+    "cobertura": 1.0,
+    "f1": 1.0
+  },
+  {
+    "consulta": "¿Cuándo se creó Python?",
+    "referencia": "Python fue creado en 1991 por Guido van Rossum.",
+    "respuesta": "Python fue creado a finales de la década de 1980 por Guido van Rossum, y su primera versión pública se lanzó en 1991.",
+    "precision": 0.391304347826087,
+    "cobertura": 1.0,
+    "f1": 0.5625
+  },
+  {
+    "consulta": "¿Quién escribió Don Quijote de la Mancha?",
+    "referencia": "Miguel de Cervantes escribió Don Quijote de la Mancha.",
+    "respuesta": "Don Quijote de la Mancha fue escrito por Miguel de Cervantes.",
+    "precision": 0.7272727272727273,
+    "cobertura": 0.8888888888888888,
+    "f1": 0.7999999999999999
+  },
+  {
+    "consulta": "¿Cuántos planetas tiene el sistema solar?",
+    "referencia": "El sistema solar tiene ocho planetas.",
+    "respuesta": "El sistema solar tiene ocho planetas.",
+    "precision": 1.0,
+    "cobertura": 1.0,
+    "f1": 1.0
+  },
+  {
+    "consulta": "¿Cuál es el río más largo de Sudamérica?",
+    "referencia": "El río Amazonas es el más largo de Sudamérica.",
+    "respuesta": "El río más largo de Sudamérica es el Amazonas.",
+    "precision": 1.0,
+    "cobertura": 1.0,
+    "f1": 1.0
+  },
+  {
+    "consulta": "¿En qué año llegó el hombre a la Luna?",
+    "referencia": "El hombre llegó a la Luna en 1969.",
+    "respuesta": "El hombre llegó a la Luna en el año 1969.",
+    "precision": 0.8,
+    "cobertura": 1.0,
+    "f1": 0.888888888888889
+  },
+  {
+    "consulta": "¿Cuál es el océano más grande del mundo?",
+    "referencia": "El océano Pacífico es el más grande del mundo.",
+    "respuesta": "El océano más grande del mundo es el océano Pacífico.",
+    "precision": 0.9,
+    "cobertura": 1.0,
+    "f1": 0.9473684210526316
+  },
+  {
+    "consulta": "¿Qué gas necesitan las plantas para la fotosíntesis?",
+    "referencia": "Las plantas necesitan dióxido de carbono para la fotosíntesis.",
+    "respuesta": "Las plantas necesitan dióxido de carbono (CO2) para realizar la fotosíntesis.",
+    "precision": 0.8181818181818182,
+    "cobertura": 1.0,
+    "f1": 0.9
+  },
+  {
+    "consulta": "¿Cuál es la capital de Argentina?",
+    "referencia": "Buenos Aires es la capital de Argentina.",
+    "respuesta": "La capital de Argentina es Buenos Aires.",
+    "precision": 1.0,
+    "cobertura": 1.0,
+    "f1": 1.0
+  },
+  {
+    "consulta": "¿Quién pintó la Mona Lisa?",
+    "referencia": "Leonardo da Vinci pintó la Mona Lisa.",
+    "respuesta": "La Mona Lisa fue pintada por Leonardo da Vinci.",
+    "precision": 0.6666666666666666,
+    "cobertura": 0.8571428571428571,
+    "f1": 0.75
+  },
+  {
+    "consulta": "¿Cuántos días tiene un año bisiesto?",
+    "referencia": "Un año bisiesto tiene 366 días.",
+    "respuesta": "Un año bisiesto tiene 366 días.",
+    "precision": 1.0,
+    "cobertura": 1.0,
+    "f1": 1.0
+  },
+  {
+    "consulta": "¿Cuál es la fórmula química del agua?",
+    "referencia": "La fórmula química del agua es H2O.",
+    "respuesta": "La fórmula química del agua es H₂O.",
+    "precision": 0.8571428571428571,
+    "cobertura": 0.8571428571428571,
+    "f1": 0.8571428571428571
+  },
+  {
+    "consulta": "¿Qué es una lista en Python?",
+    "referencia": "Una lista es una colección ordenada y modificable.",
+    "respuesta": "Una lista en Python es una colección ordenada y mutable de elementos, que pueden ser de diferentes tipos, y se define entre corchetes.",
+    "precision": 0.30434782608695654,
+    "cobertura": 0.875,
+    "f1": 0.4516129032258065
+  },
+  {
+    "consulta": "¿Cuál es el planeta más grande del sistema solar?",
+    "referencia": "Júpiter es el planeta más grande del sistema solar.",
+    "respuesta": "Júpiter es el planeta más grande del sistema solar.",
+    "precision": 1.0,
+    "cobertura": 1.0,
+    "f1": 1.0
+  },
+  {
+    "consulta": "¿En qué año comenzó la Segunda Guerra Mundial?",
+    "referencia": "La Segunda Guerra Mundial comenzó en 1939.",
+    "respuesta": "La Segunda Guerra Mundial comenzó en 1939.",
+    "precision": 1.0,
+    "cobertura": 1.0,
+    "f1": 1.0
+  },
+  {
+    "consulta": "¿Cuál es el idioma oficial de Brasil?",
+    "referencia": "El idioma oficial de Brasil es el portugués.",
+    "respuesta": "El idioma oficial de Brasil es el portugués.",
+    "precision": 1.0,
+    "cobertura": 1.0,
+    "f1": 1.0
+  },
+  {
+    "consulta": "¿Quién fue el primer presidente de Estados Unidos?",
+    "referencia": "George Washington fue el primer presidente de Estados Unidos.",
+    "respuesta": "El primer presidente de Estados Unidos fue George Washington.",
+    "precision": 1.0,
+    "cobertura": 1.0,
+    "f1": 1.0
+  },
+  {
+    "consulta": "¿Qué cordillera cruza Chile de norte a sur?",
+    "referencia": "La cordillera de los Andes recorre Chile de norte a sur.",
+    "respuesta": "La cordillera de los Andes cruza Chile de norte a sur.",
+    "precision": 0.9090909090909091,
+    "cobertura": 0.9090909090909091,
+    "f1": 0.9090909090909091
+  },
+  {
+    "consulta": "¿Cuántos grados mide un ángulo recto?",
+    "referencia": "Un ángulo recto mide 90 grados.",
+    "respuesta": "Un ángulo recto mide 90 grados.",
+    "precision": 1.0,
+    "cobertura": 1.0,
+    "f1": 1.0
+  }
+]

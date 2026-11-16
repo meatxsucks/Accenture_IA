@@ -64,6 +64,22 @@ def calcular_precision_cobertura_f1(
 
     return {"precision": precision, "cobertura": cobertura, "f1": f1}
 
+def calcular_metricas(texto_referencia: str, texto_respuesta: str) -> dict[str, float]:
+    return calcular_precision_cobertura_f1(
+        procesar_texto(texto_referencia), procesar_texto(texto_respuesta)
+    )
+
+
+def resumir_metricas(resultados: list[dict[str, float]]) -> dict[str, float]:
+    if not resultados:
+        return {"precision_promedio": 0.0, "cobertura_promedio": 0.0, "f1_promedio": 0.0}
+
+    n = len(resultados)
+    return {
+        "precision_promedio": sum(r["precision"] for r in resultados) / n,
+        "cobertura_promedio": sum(r["cobertura"] for r in resultados) / n,
+        "f1_promedio": sum(r["f1"] for r in resultados) / n,
+    }
 
 if __name__ == "__main__":
     texto = "El gato, el perro y el gato corren.!"
