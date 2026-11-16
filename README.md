@@ -56,7 +56,30 @@ Los errores del proveedor se clasifican en `enviar_peticion` (dentro de cada `co
 | 429 (límite de uso) | `TimeoutError`, con los segundos de `Retry-After` si el proveedor los informa | Sí |
 | 5xx (el proveedor no pudo procesar la petición) | `TimeoutError` | Sí |
 
-Cada cliente es autocontenido: trae su propio `enviar_peticion` y su propio `con_reintento`. `con_reintento` reintenta hasta 3 veces con una espera fija de 2 segundos, y solo ante `TimeoutError`. Si se agotan los intentos, `consultar_modelo` lo convierte en un `RuntimeError` con un mensaje claro: "El servicio no respondió tras varios intentos. Intenta más tarde."
+Cada cliente es autocontenido: trae su propio `enviar_peticion` y su propio `con_reintento`. `con_reintento` reintenta hasta 3 veces, solo ante `TimeoutError`, y la espera crece en cada intento (backoff exponencial: 2 s, 4 s…, con un tope de 30 s y un jitter aleatorio de hasta 10 %). Si se agotan los intentos, `consultar_modelo` lo convierte en un `RuntimeError` con un mensaje claro: "El servicio no respondió tras varios intentos. Intenta más tarde."
+
+Cada cliente registra además el costo estimado de cada operación exitosa (`registrar_costo`) y lo acumula en `costo_total_sesion`. Una petición que agota sus reintentos no suma costo. El ensayo de rate limit está documentado en `docs/registro-ensayo-rate-limit.md`.
+
+## Pruebas unitarias
+
+```
+python -m pytest -v
+```
+
+La suite de `pytest` vive en `tests/` y cubre `enviar_peticion`, `con_reintento`, `registrar_costo` y `consultar_modelo` de `src/cliente.py`, además del pipeline de texto. Usa mocks para la API y para `time.sleep`, así que corre en menos de un segundo y no gasta tokens. `pytest.ini` apunta a `src/`, por eso se ejecuta desde la raíz del repositorio. El detalle de qué se prueba está en `docs/pruebas-unitarias.md`, y la salida de cada prueba en `docs/resultado-pruebas.txt`.
+
+## Pipeline de texto y métricas
+
+`src/pipeline_texto.py` limpia y tokeniza texto (`limpiar_texto`, `tokenizar`, `procesar_texto`) y calcula precisión, cobertura y F1 entre una referencia y una respuesta (`calcular_precision_cobertura_f1` y `calcular_metricas`), contando las repeticiones de cada palabra. Con eso se evalúan respuestas reales del cliente:
+
+```
+python src/evaluar_pipeline.py     # 3 preguntas con Gemini: coincidencia en crudo y procesada, precisión, cobertura, F1 y un resumen
+python src/generar_resultados.py   # 20 preguntas con Deepseek; guarda docs/resultados_metricas.json
+python src/muestra_revision.py     # muestra los 5 casos de menor F1 y los 5 de mayor F1, para revisarlos a mano
+python src/revision_manual.py      # guarda la revisión manual (rúbrica de tres preguntas) en docs/revision_manual.json
+```
+
+`generar_resultados.py` hace 20 llamadas reales a la API. La revisión manual y sus hallazgos están documentados en `docs/limites_metrica.md`: qué mide la métrica, en qué casos falla, cómo se eligió la muestra revisada y cuándo conviene confiar en el número.
 
 ## Banco de prompts y pruebas de consistencia
 
@@ -72,10 +95,10 @@ Los resultados quedan en `prompts/registro_resultados_gemini.json`, `prompts/reg
 
 ## Estructura de carpetas
 
-- `src/` : todo el código fuente del proyecto: `main.py` (punto de entrada), `cliente.py` y `cliente_api.py` (el cliente modular base) y `proveedores_ia/`, con el módulo de consumo (`consumir_*.py`) y el cliente modular (`cliente_*.py`) de cada modelo.
+- `src/` : todo el código fuente del proyecto: `main.py` (punto de entrada), `cliente.py` y `cliente_api.py` (el cliente modular base), `pipeline_texto.py` (limpieza, tokenización y métricas), los scripts de evaluación (`evaluar_pipeline.py`, `generar_resultados.py`, `muestra_revision.py` y `revision_manual.py`) y `proveedores_ia/`, con el módulo de consumo (`consumir_*.py`) y el cliente modular (`cliente_*.py`) de cada modelo.
 - `prompts/` : el banco de prompts, los scripts de prueba de consistencia y sus registros de resultados.
-- `docs/` : documentación técnica del proyecto (diagrama de arquitectura, decisión de arquitectura y capturas de evidencia).
-- `tests/` : pruebas de tu código (las vas a usar más adelante en el programa, cuando el proyecto lo requiera).
+- `docs/` : documentación técnica del proyecto: diagramas de arquitectura y de manejo de errores, decisión de arquitectura, registro del ensayo de rate limit, documentación de las pruebas, el documento de límites de la métrica, los resultados y la revisión manual (`.json`) y capturas de evidencia.
+- `tests/` : la suite de `pytest` del cliente modular y del pipeline de texto. `pytest.ini` en la raíz le indica dónde está el código.
 - `requirements.txt` : dependencias de Python del proyecto, para que cualquier otra persona pueda reconstruir tu entorno con un solo comando.
 - `.env.example` : plantilla de las variables de entorno que el proyecto necesita, sin valores reales. Tu archivo `.env` real (con tus credenciales) nunca se commitea.
 - `.gitignore` : le dice a Git qué archivos y carpetas ignorar (entre ellos, tu entorno virtual y tu archivo `.env`).

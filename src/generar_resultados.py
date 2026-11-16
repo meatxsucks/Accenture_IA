@@ -37,7 +37,7 @@ if __name__ == "__main__":
     for i, (consulta, referencia) in enumerate(CASOS, start=1):
         try:
             respuesta = parsear_respuesta_json(consultar_modelo(consulta, INSTRUCCION))["response"]
-        except RuntimeError as error:
+        except (RuntimeError, ValueError) as error:
             print(f"[Caso {i}] No se pudo obtener respuesta: {error}")
             continue
 
